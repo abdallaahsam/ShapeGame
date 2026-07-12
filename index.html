@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تحدي الأشكال الثلاثة - Smart Nim Game</title>
+  <!-- Cairo Font for beautiful Arabic typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Canvas for particle background & match effects -->
+  <canvas id="particle-canvas"></canvas>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="game-header">
+      <div class="logo">
+        <span class="logo-icon">▲</span>
+        <h1>تحدي الأشكال الثلاثة</h1>
+      </div>
+      <div class="controls-top">
+        <button id="toggle-sound" class="icon-btn" title="كتم/تفعيل الصوت">🔊</button>
+        <button id="toggle-theme" class="icon-btn" title="تغيير المظهر">🌙</button>
+      </div>
+    </header>
+
+    <!-- Main Screens Container -->
+    <main class="main-content">
+      
+      <!-- 1. Lobby Screen -->
+      <section id="lobby-screen" class="game-card active">
+        <div class="welcome-section">
+          <h2>مرحباً بك في تحدي الأشكال الثلاثة!</h2>
+          <p>لعبة ذكاء واستراتيجية رياضية كلاسيكية (لعبة نيم). يتناوب اللاعبان على إزالة أي عدد من الأشكال من صف واحد في كل دور. الفائز هو من يترك شكلاً واحداً فقط على اللوحة ليجبر الخصم على أخذ الشكل الأخير والخسارة!</p>
+        </div>
+
+        <div class="setup-group">
+          <h3>اختر طور اللعب:</h3>
+          <div class="mode-grid">
+            <button class="mode-card active" data-mode="vs_ai">
+              <span class="mode-icon">🤖</span>
+              <span class="mode-title">لعب ضد الروبوت</span>
+              <span class="mode-desc">تحدَّ الذكاء الاصطناعي واختبر مهارتك الاستراتيجية.</span>
+            </button>
+            <button class="mode-card" data-mode="pvp">
+              <span class="mode-icon">👥</span>
+              <span class="mode-title">لعب ثنائي محلي</span>
+              <span class="mode-desc">تحدَّ صديقك على نفس الجهاز وتنافسوا وجهاً لوجه.</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="difficulty-group" class="setup-group">
+          <h3>اختر مستوى الصعوبة للروبوت:</h3>
+          <div class="difficulty-selector">
+            <button class="diff-btn active" data-diff="easy">سهل (حركات عشوائية)</button>
+            <button class="diff-btn" data-diff="hard">صعب (ذكاء مطلق)</button>
+          </div>
+        </div>
+
+        <div class="stats-overview">
+          <div class="stat-box">
+            <span class="stat-label">الفوز ضد الروبوت:</span>
+            <span id="ai-wins-count" class="stat-val">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">المباريات الثنائية:</span>
+            <span id="pvp-matches-count" class="stat-val">0</span>
+          </div>
+        </div>
+
+        <button id="start-game-btn" class="btn primary-btn btn-lg">ابدأ اللعب الآن 🚀</button>
+      </section>
+
+      <!-- 2. Game Screen -->
+      <section id="game-screen" class="game-card">
+        <!-- Turn Indicator Bar -->
+        <div class="turn-indicator-bar" id="turn-bar">
+          <div class="turn-status">
+            <span class="turn-icon">⚡</span>
+            <h2 id="current-turn-text">جاري تحميل الدور...</h2>
+          </div>
+          <div class="turn-rules">
+            أزل أي عدد من الأشكال من صف واحد، ثم اضغط إنهاء الدور.
+          </div>
+        </div>
+
+        <!-- Nim Board -->
+        <div class="nim-board-container">
+          <div class="nim-board">
+            
+            <!-- Row 0: Triangles (1 shape, green) -->
+            <div class="nim-row" data-row="0" id="row-triangles">
+              <div class="row-shapes-container" id="container-triangles">
+                <!-- Spawns dynamically -->
+              </div>
+            </div>
+
+            <!-- Row 1: Circles (4 shapes, blue) -->
+            <div class="nim-row" data-row="1" id="row-circles">
+              <div class="row-shapes-container" id="container-circles">
+                <!-- Spawns dynamically -->
+              </div>
+            </div>
+
+            <!-- Row 2: Squares (6 shapes, yellow) -->
+            <div class="nim-row" data-row="2" id="row-squares">
+              <div class="row-shapes-container" id="container-squares">
+                <!-- Spawns dynamically -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- In-game Actions -->
+        <div class="turn-actions">
+          <button id="undo-btn" class="btn secondary-btn btn-lg disabled" disabled>تراجع ↩️</button>
+          <button id="pass-btn" class="btn primary-btn btn-lg disabled" disabled>إنهاء الدور ➡️</button>
+        </div>
+
+        <!-- Back to Menu button during game -->
+        <div class="game-footer-controls">
+          <button id="quit-game-btn" class="btn secondary-btn">إنهاء اللعب والعودة للقائمة 🏠</button>
+        </div>
+      </section>
+
+      <!-- 3. Game Over Screen -->
+      <section id="gameover-screen" class="game-card">
+        <div class="gameover-header">
+          <div class="trophy-badge" id="gameover-emoji">🏆</div>
+          <h2 id="gameover-title">انتهت اللعبة!</h2>
+          <p id="gameover-subtitle">تفاصيل المباراة:</p>
+        </div>
+
+        <div class="gameover-stats-grid">
+          <div class="gameover-stat-card">
+            <span class="g-label">الفائز</span>
+            <span id="final-winner" class="g-val">—</span>
+          </div>
+          <div class="gameover-stat-card">
+            <span class="g-label">طور اللعب</span>
+            <span id="final-mode" class="g-val">—</span>
+          </div>
+          <div class="gameover-stat-card">
+            <span class="g-label">عدد الأدوار الملعوبة</span>
+            <span id="final-turns" class="g-val">0</span>
+          </div>
+          <div class="gameover-stat-card">
+            <span class="g-label">الأشكال المتبقية في النهاية</span>
+            <span id="final-remaining" class="g-val">1</span>
+          </div>
+        </div>
+
+        <div class="gameover-actions">
+          <button id="retry-game-btn" class="btn primary-btn btn-lg">العب مجدداً 🔄</button>
+          <button id="back-to-menu-btn" class="btn secondary-btn btn-lg">القائمة الرئيسية 🏠</button>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="app-footer">
+      <p>تم التطوير بواسطة Antigravity AI Pair Programmer &bull; 2026</p>
+    </footer>
+  </div>
+
+  <!-- Load Game scripts -->
+  <script src="ai.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
